@@ -1,0 +1,11 @@
+{
+  "name": "@tacet/contracts",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test -vvv",
+    "chain": "anvil --chain-id 11155111",
+    "deploy:sepolia": "forge script script/Deploy.s.sol:Deploy --rpc-url sepolia --broadcast --verify"
+  }
+}

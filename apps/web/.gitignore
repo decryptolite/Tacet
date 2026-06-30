@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+*.tsbuildinfo
+
+# Env files — real secrets only ever live in .env.local
+.env
+.env*.local
+
+# Misc
+.DS_Store
+*.log

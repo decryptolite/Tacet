@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Instrument Serif — display headlines */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
+/* Geist Sans + Geist Mono — UI and code */
+@import url('https://fonts.cdnfonts.com/css/geist-sans');
+@import url('https://fonts.cdnfonts.com/css/geist-mono');
+
+@layer base {
+  :root {
+    --ink-1000: #0E0E0C;
+    --ink-800: #2A2A26;
+    --ink-600: #5A5A53;
+    --ink-400: #989590;
+    --ink-200: #D8D5CE;
+    --ink-100: #EFECE3;
+    --ink-50: #FAF8F2;
+    --accent: #C89060;
+    --state-claimable: #6B8E5A;
+    --state-error: #A85A3F;
+  }
+
+  html {
+    background-color: var(--ink-50);
+    color: var(--ink-1000);
+    font-family: "Geist Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--ink-50);
+    min-height: 100dvh;
+  }
+
+  /* Tabular numerals everywhere — columns tabulate */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Focus rings: ink-1000, 1.5px, 2px offset */
+  *:focus-visible {
+    outline: 1.5px solid var(--ink-1000);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Reduced motion: collapse all animations to opacity */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Section dividers */
+  .rule {
+    border-top: 0.5px solid var(--ink-200);
+  }
+
+  /* Document header mono style */
+  .doc-header {
+    font-family: "Geist Mono", monospace;
+    font-size: 0.75rem;
+    color: var(--ink-400);
+    letter-spacing: 0.02em;
+  }
+
+  /* Redaction bar */
+  .redaction {
+    display: inline-block;
+    height: 14px;
+    background-color: var(--ink-1000);
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+}
