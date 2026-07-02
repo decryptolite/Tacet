@@ -78,20 +78,21 @@ export default function ComposerPage() {
           ))}
         </div>
 
-        {/* Step content */}
-        {step === 1 && (
-          <RecipientsStep onNext={handleRecipientsNext} />
-        )}
-        {step === 2 && (
-          <AllocationsStep
-            contributors={state.contributors}
-            selected={state.selected}
-            onBack={() => setStep(1)}
-            onNext={handleAllocationsNext}
-          />
-        )}
-        {step === 3 && (
-          <ZamaGate>
+        {/* Step content — wrapped in ZamaGate: every step touches the relayer
+            (steps 1–2 reveal the confidential CTTT balance, step 3 encrypts). */}
+        <ZamaGate>
+          {step === 1 && (
+            <RecipientsStep onNext={handleRecipientsNext} />
+          )}
+          {step === 2 && (
+            <AllocationsStep
+              contributors={state.contributors}
+              selected={state.selected}
+              onBack={() => setStep(1)}
+              onNext={handleAllocationsNext}
+            />
+          )}
+          {step === 3 && (
             <ReviewStep
               contributors={state.contributors}
               selected={state.selected}
@@ -101,8 +102,8 @@ export default function ComposerPage() {
               amounts={state.amounts}
               onBack={() => setStep(2)}
             />
-          </ZamaGate>
-        )}
+          )}
+        </ZamaGate>
       </main>
     </>
   );

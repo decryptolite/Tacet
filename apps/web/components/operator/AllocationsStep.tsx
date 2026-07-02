@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Button from "@/components/design/Button";
+import FaucetPanel from "@/components/operator/FaucetPanel";
 import { computeAllocations, type Contributor, type Formula } from "@/lib/github";
 
 interface AllocationsStepProps {
@@ -44,6 +45,8 @@ export default function AllocationsStep({ contributors, selected, onBack, onNext
 
   return (
     <div className="space-y-8">
+      <FaucetPanel requiredAmount={budget} />
+
       {/* Budget */}
       <div>
         <label htmlFor="budget" className="block text-label text-ink-600 mb-2 uppercase tracking-wider">

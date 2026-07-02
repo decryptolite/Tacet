@@ -9,9 +9,10 @@ import { buildZamaConfig } from "@/lib/zama";
 
 /**
  * Scopes the Zama FHE SDK to the routes that actually encrypt or decrypt —
- * the claim flow and the operator deploy step. Kept out of the global
- * provider tree so the marketing route never pulls the relayer WASM into its
- * first load. The signer is derived from the connected wallet; an
+ * the claim flow and the whole operator composer (steps 1–2 reveal the
+ * confidential CTTT balance, step 3 encrypts allocations). Kept out of the
+ * global provider tree so the marketing route never pulls the relayer WASM
+ * into its first load. The signer is derived from the connected wallet; an
  * account-less fallback keeps the SDK available (read-only) before
  * connection so the reveal/encrypt hooks can mount.
  */

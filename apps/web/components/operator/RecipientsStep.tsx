@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import Button from "@/components/design/Button";
+import FaucetPanel from "@/components/operator/FaucetPanel";
 import { fetchContributors, parseContributorsCsv, type Contributor } from "@/lib/github";
 
 interface RecipientsStepProps {
@@ -59,6 +60,8 @@ export default function RecipientsStep({ onNext }: RecipientsStepProps) {
 
   return (
     <div className="space-y-8">
+      <FaucetPanel />
+
       {/* URL input */}
       <div>
         <label htmlFor="repo-url" className="block text-label text-ink-600 mb-2 uppercase tracking-wider">
