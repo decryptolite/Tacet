@@ -2,12 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Instrument Serif — display headlines */
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
-
-/* Geist Sans + Geist Mono — UI and code */
-@import url('https://fonts.cdnfonts.com/css/geist-sans');
-@import url('https://fonts.cdnfonts.com/css/geist-mono');
+/* Fonts are self-hosted via next/font in app/layout.tsx (Geist Sans/Mono from
+   the `geist` package, Instrument Serif from next/font/google) and exposed as
+   CSS variables. No external font CDN — avoids render-blocking and 5xx. */
 
 @layer base {
   :root {
@@ -26,7 +23,7 @@
   html {
     background-color: var(--ink-50);
     color: var(--ink-1000);
-    font-family: "Geist Sans", system-ui, sans-serif;
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -69,7 +66,7 @@
 
   /* Document header mono style */
   .doc-header {
-    font-family: "Geist Mono", monospace;
+    font-family: var(--font-geist-mono), monospace;
     font-size: 0.75rem;
     color: var(--ink-400);
     letter-spacing: 0.02em;

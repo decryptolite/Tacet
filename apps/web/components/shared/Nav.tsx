@@ -8,7 +8,7 @@ export default function Nav() {
     <header className="sticky top-0 z-40 bg-ink-50/90 backdrop-blur-sm border-b border-ink-100">
       <div className="max-w-content mx-auto px-8 md:px-16 h-14 flex items-center justify-between">
         <Link href="/" className="font-serif text-[1.125rem] text-ink-1000 tracking-tight">
-          Tacet
+          tacet<span className="text-accent">.</span>
         </Link>
 
         <nav className="flex items-center gap-3">
@@ -44,7 +44,7 @@ export default function Nav() {
 
           <Link
             href="/app"
-            className="font-sans text-[13px] font-medium bg-ink-1000 text-ink-50 rounded-pill px-4 py-1.5 hover:bg-ink-800 transition-colors"
+            className="font-sans text-[13px] font-medium bg-accent text-ink-1000 rounded-pill px-4 py-1.5 hover:opacity-90 transition-colors"
           >
             Launch app
           </Link>

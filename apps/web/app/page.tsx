@@ -21,8 +21,8 @@ function Hero() {
     <section className="max-w-content mx-auto px-8 md:px-16 pt-24 pb-32">
       {/* Editorial headline — signature move #6: period-as-emphasis */}
       <div className="max-w-[36rem] mb-16">
-        <h1 className="font-serif text-h1 text-ink-1000 leading-[1.1] tracking-tight">
-          Paid. Not published.
+        <h1 className="font-serif text-display text-ink-1000 tracking-tight">
+          Paid. Not <em className="italic text-accent">published</em>.
         </h1>
         <p className="mt-8 text-body text-ink-600 max-w-prose">
           A maintainer ranks contributors. Each receives a sealed allocation.
@@ -31,7 +31,7 @@ function Hero() {
         <div className="mt-12 flex items-center gap-4">
           <a
             href="/app"
-            className="inline-flex items-center justify-center rounded-pill bg-ink-1000 px-[18px] py-[10px] text-[13px] font-sans font-medium text-ink-50 hover:bg-ink-800 transition-colors duration-standard ease-sealed"
+            className="inline-flex items-center justify-center rounded-pill bg-accent px-[18px] py-[10px] text-[13px] font-sans font-medium text-ink-1000 hover:opacity-90 transition-colors duration-standard ease-sealed"
           >
             Launch app
           </a>

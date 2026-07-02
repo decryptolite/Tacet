@@ -27,9 +27,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        serif: ["Instrument Serif", "Georgia", "serif"],
-        sans: ["Geist Sans", "system-ui", "sans-serif"],
-        mono: ["Geist Mono", "Menlo", "monospace"],
+        serif: ["var(--font-instrument-serif)", "Georgia", "serif"],
+        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        mono: ["var(--font-geist-mono)", "Menlo", "monospace"],
       },
       fontSize: {
         display: ["clamp(3rem, 7vw, 5.5rem)", { letterSpacing: "-0.02em", lineHeight: "1.05" }],

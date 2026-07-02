@@ -1,6 +1,17 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { Instrument_Serif } from "next/font/google";
 import Providers from "@/components/shared/Providers";
 import "@/styles/globals.css";
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-instrument-serif",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Tacet — Confidential rewards for open-source contributors",
@@ -16,17 +27,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="bg-ink-50">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.cdnfonts.com" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
-          rel="stylesheet"
-        />
-        <link href="https://fonts.cdnfonts.com/css/geist-sans" rel="stylesheet" />
-        <link href="https://fonts.cdnfonts.com/css/geist-mono" rel="stylesheet" />
-      </head>
+    <html
+      lang="en"
+      className={`${GeistSans.variable} ${GeistMono.variable} ${instrumentSerif.variable} bg-ink-50`}
+    >
       <body className="bg-ink-50 text-ink-1000 font-sans antialiased">
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4">
           Skip to content

@@ -17,7 +17,7 @@ const variantClasses: Record<Variant, string> = {
   secondary:
     "bg-transparent text-ink-1000 border border-ink-200 hover:border-ink-600",
   accent:
-    "bg-accent text-ink-50 border border-accent hover:opacity-90",
+    "bg-accent text-ink-1000 border border-accent hover:opacity-90",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
