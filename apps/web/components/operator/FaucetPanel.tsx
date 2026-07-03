@@ -1,15 +1,16 @@
 "use client";
 
-// Faucet nudge for the allocation step. Two visible states, both keyed off the
+// Faucet nudge for the allocation step. Visible modes, all keyed off the
 // operator's confidential CTTT balance:
-//   1. Zero balance (readable gaslessly) — mint nudge.
-//   2. Non-zero but below the campaign budget — insufficient warning.
-// The panel retires itself once the balance covers the budget. Deciding #2 needs
-// the plaintext figure, so a non-zero handle is user-decrypted once — one
-// EIP-712 signature, the same seal/reveal move as the claim flow; a zero handle
-// never needs it, and with no budget to check (requiredAmount 0) the reveal is
-// skipped entirely. Pulls from Sealed §Typography (Geist Mono label + number,
-// Geist Sans notice) and the single amber accent for the one action.
+//   • Zero balance (readable gaslessly) — mint nudge.
+//   • Non-zero, not yet checked, with a budget to meet — a sealed row plus an
+//     explicit "Check balance" tap. Revealing a confidential balance costs one
+//     EIP-712 signature, so it never happens on its own / on mount.
+//   • Checked and below budget — insufficient warning with the real figure.
+// The panel retires itself once a checked balance covers the budget, and with no
+// budget to meet (requiredAmount 0) a non-zero balance is simply hidden. Pulls
+// from Sealed §Typography (Geist Mono label + number, Geist Sans notice) and the
+// single amber accent for the one action.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
@@ -23,7 +24,7 @@ import { CTTT_SEPOLIA, TOKEN_DECIMALS } from "@/lib/tokenops";
 const MINT_AMOUNT = BigInt(500) * BigInt(10) ** BigInt(TOKEN_DECIMALS);
 
 interface FaucetPanelProps {
-  /** Whole-CTTT budget the balance must cover; 0 disables the below-budget warning. */
+  /** Whole-CTTT budget the balance must cover; 0 disables the below-budget check. */
   requiredAmount?: number;
 }
 
@@ -41,7 +42,7 @@ export default function FaucetPanel({ requiredAmount = 0 }: FaucetPanelProps) {
 
   const [handle, setHandle] = useState<Hex | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
-  const [revealing, setRevealing] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [minting, setMinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,35 +68,21 @@ export default function FaucetPanel({ requiredAmount = 0 }: FaucetPanelProps) {
 
   const empty = handle !== null && BigInt(handle) === BigInt(0);
 
-  const revealHandle = useCallback(
-    async (h: Hex) => {
+  async function check() {
+    if (!handle || empty) return;
+    setChecking(true);
+    setError(null);
+    try {
       const cleartext = await sdk.decryption.decryptValues([
-        { encryptedValue: h, contractAddress: CTTT_SEPOLIA },
+        { encryptedValue: handle, contractAddress: CTTT_SEPOLIA },
       ]);
-      return Number(cleartext[h]) / 10 ** TOKEN_DECIMALS;
-    },
-    [sdk]
-  );
-
-  // A non-zero balance only matters against a real budget — decrypt once to compare.
-  useEffect(() => {
-    if (!handle || empty || requiredAmount <= 0 || balance !== null || revealing) return;
-    let cancelled = false;
-    setRevealing(true);
-    revealHandle(handle)
-      .then((b) => {
-        if (!cancelled) setBalance(b);
-      })
-      .catch(() => {
-        /* leave balance null — without the figure we simply don't warn */
-      })
-      .finally(() => {
-        if (!cancelled) setRevealing(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [handle, empty, requiredAmount, balance, revealing, revealHandle]);
+      setBalance(Number(cleartext[handle]) / 10 ** TOKEN_DECIMALS);
+    } catch {
+      setError("Couldn't read your balance. Try again.");
+    } finally {
+      setChecking(false);
+    }
+  }
 
   async function mint() {
     if (!faucet || !walletClient) {
@@ -106,14 +93,8 @@ export default function FaucetPanel({ requiredAmount = 0 }: FaucetPanelProps) {
     setError(null);
     try {
       await faucet.mintConfidential({ amount: MINT_AMOUNT });
-      const fresh = await loadHandle();
-      if (fresh && BigInt(fresh) !== BigInt(0) && requiredAmount > 0) {
-        try {
-          setBalance(await revealHandle(fresh));
-        } catch {
-          setBalance(null);
-        }
-      }
+      setBalance(null); // re-seal — the operator checks the new balance explicitly
+      await loadHandle();
     } catch (err) {
       if (err instanceof FaucetSupplyExhaustedError) {
         setError("Test token supply is exhausted — contact the Tacet team.");
@@ -125,39 +106,63 @@ export default function FaucetPanel({ requiredAmount = 0 }: FaucetPanelProps) {
     }
   }
 
-  // Two visible states only: a zero balance, or a revealed balance below budget.
-  const mode: "zero" | "insufficient" | null = !isConnected
+  const mode: "zero" | "sealed" | "insufficient" | null = !isConnected
     ? null
     : empty
     ? "zero"
-    : balance !== null && requiredAmount > 0 && balance < requiredAmount
+    : requiredAmount <= 0
+    ? null
+    : balance === null
+    ? "sealed"
+    : balance < requiredAmount
     ? "insufficient"
     : null;
 
   if (!mode) return null;
 
-  const value = mode === "zero" ? "0" : (balance ?? 0).toLocaleString();
+  const value = mode === "sealed" ? "••••••" : mode === "zero" ? "0" : (balance ?? 0).toLocaleString();
 
   return (
     <div className="border-0.5 border-ink-200 rounded-input bg-card" style={{ padding: "20px 24px" }}>
-      <div className="mb-8 flex items-center justify-between">
+      <div className={["flex items-center justify-between", mode === "sealed" ? "mb-16" : "mb-8"].join(" ")}>
         <span className="font-mono text-[10px] uppercase tracking-[1px] text-ink-400">CTTT balance</span>
-        <span className="font-mono text-[20px] tabular-nums text-ink-1000">{value}</span>
+        <span
+          className={[
+            "font-mono text-[20px] tabular-nums",
+            mode === "sealed" ? "text-ink-400" : "text-ink-1000",
+          ].join(" ")}
+        >
+          {value}
+        </span>
       </div>
 
-      <p className="mb-16 font-sans text-[14px] text-ink-600">
-        {mode === "zero"
-          ? "You need CTTT test tokens to run a campaign."
-          : "Insufficient balance for this campaign."}
-      </p>
-      <button
-        onClick={mint}
-        disabled={minting}
-        className="rounded-pill bg-accent font-sans text-[14px] font-medium text-ink-1000 transition-opacity hover:opacity-90 disabled:pointer-events-none"
-        style={{ padding: "10px 24px", opacity: minting ? 0.7 : 1 }}
-      >
-        {minting ? "Minting…" : "Mint 500 CTTT →"}
-      </button>
+      {mode !== "sealed" && (
+        <p className="mb-16 font-sans text-[14px] text-ink-600">
+          {mode === "zero"
+            ? "You need CTTT test tokens to run a campaign."
+            : "Insufficient balance for this campaign."}
+        </p>
+      )}
+
+      {mode === "sealed" ? (
+        <button
+          onClick={check}
+          disabled={checking}
+          className="rounded-pill bg-accent font-sans text-[14px] font-medium text-ink-1000 transition-opacity hover:opacity-90 disabled:pointer-events-none"
+          style={{ padding: "10px 24px", opacity: checking ? 0.7 : 1 }}
+        >
+          {checking ? "Checking…" : "Check balance"}
+        </button>
+      ) : (
+        <button
+          onClick={mint}
+          disabled={minting}
+          className="rounded-pill bg-accent font-sans text-[14px] font-medium text-ink-1000 transition-opacity hover:opacity-90 disabled:pointer-events-none"
+          style={{ padding: "10px 24px", opacity: minting ? 0.7 : 1 }}
+        >
+          {minting ? "Minting…" : "Mint 500 CTTT →"}
+        </button>
+      )}
       {error && <p className="mt-12 font-mono text-[12px] text-ink-400">{error}</p>}
     </div>
   );
