@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Nav from "@/components/shared/Nav";
 import ZamaGate from "@/components/shared/ZamaGate";
-import FaucetPanel from "@/components/operator/FaucetPanel";
 import RecipientsStep from "@/components/operator/RecipientsStep";
 import AllocationsStep from "@/components/operator/AllocationsStep";
 import ReviewStep from "@/components/operator/ReviewStep";
@@ -58,11 +57,6 @@ export default function ComposerPage() {
         <div className="flex items-center justify-between doc-header mb-8">
           <span>Campaign · {truncate(CAMPAIGN_REF)}</span>
           <span>{new Date().toISOString().slice(0, 10).replace(/-/g, ".")}</span>
-        </div>
-
-        {/* Faucet nudge — self-hides once the operator holds test tokens */}
-        <div className="mb-12">
-          <FaucetPanel />
         </div>
 
         {/* Step counter + heading */}
