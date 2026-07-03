@@ -9,16 +9,25 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        paper: "#FAF8F2",
+        card: "#FCFBF6",
         ink: {
+          DEFAULT: "#0E0E0C",
           1000: "#0E0E0C",
           800: "#2A2A26",
-          600: "#5A5A53",
-          400: "#989590",
-          200: "#D8D5CE",
-          100: "#EFECE3",
+          600: "#5A5A53", // ink-2
+          400: "#989590", // ink-3
+          300: "#B7B3AD", // ink-4
+          250: "#C0BCB5", // ink-5
+          200: "#D8D5CE", // border-3
+          150: "#E6E3DC", // border-2
+          100: "#EFECE4", // border-1
           50: "#FAF8F2",
         },
         accent: {
+          DEFAULT: "#C89060",
+        },
+        amber: {
           DEFAULT: "#C89060",
         },
         state: {

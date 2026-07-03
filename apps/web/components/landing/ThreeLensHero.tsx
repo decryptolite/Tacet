@@ -65,10 +65,10 @@ export default function ThreeLensHero() {
   const config = lensConfig[lens];
 
   return (
-    <div className="border border-ink-200 rounded-card overflow-hidden bg-ink-50">
+    <div className="border-0.5 border-ink-200 rounded-card overflow-hidden bg-card">
       {/* Document header */}
-      <div className="border-b border-ink-200 px-6 py-3 flex items-center justify-between">
-        <span className="font-mono text-code text-ink-400">
+      <div className="border-b border-ink-150 px-6 py-3 flex items-center justify-between">
+        <span className="font-mono text-[10px] text-ink-300 tracking-[1px]">
           Campaign · {truncate(DEMO_HANDLE)} · 2026.07.04
         </span>
         <ThreeLensToggle active={lens} onChange={handleManualChange} />
@@ -83,7 +83,7 @@ export default function ThreeLensHero() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: duration.fast, ease: ease.sealed }}
-            className="text-label text-ink-400 uppercase tracking-wider"
+            className="font-mono text-[9px] text-ink-400 uppercase tracking-[1px]"
           >
             {config.label}
           </motion.span>
@@ -92,10 +92,10 @@ export default function ThreeLensHero() {
 
       {/* Table */}
       <div className="px-6 pb-6">
-        <div className="grid grid-cols-3 gap-4 py-2 border-b border-ink-100 mb-1">
-          <span className="text-label text-ink-400 uppercase tracking-wider">Contributor</span>
-          <span className="text-label text-ink-400 uppercase tracking-wider text-right">Commits</span>
-          <span className="text-label text-ink-400 uppercase tracking-wider text-right">Allocation</span>
+        <div className="grid grid-cols-3 gap-4 py-2 border-b border-ink-150 mb-1">
+          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px]">Contributor</span>
+          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px] text-right">Commits</span>
+          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px] text-right">Allocation</span>
         </div>
 
         <AnimatePresence mode="wait">
@@ -109,7 +109,7 @@ export default function ThreeLensHero() {
             {recipients.map((r, i) => (
               <div
                 key={r.handle}
-                className="grid grid-cols-3 gap-4 py-3 border-b border-ink-100 last:border-0 items-center"
+                className="grid grid-cols-3 gap-4 py-3 border-b border-ink-150 last:border-0 items-center"
               >
                 <span className="font-mono text-code text-ink-800">@{r.handle}</span>
                 <span className="font-mono text-code text-ink-600 text-right">{r.commits.toLocaleString()}</span>
@@ -122,7 +122,7 @@ export default function ThreeLensHero() {
         </AnimatePresence>
 
         {lens === "public" && (
-          <div className="mt-4 pt-4 border-t border-ink-100">
+          <div className="mt-4 pt-4 border-t border-ink-150">
             <CipherCompanion handle={DEMO_HANDLE} ambient />
           </div>
         )}

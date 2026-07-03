@@ -1,36 +1,30 @@
 "use client";
 
-// Reads the operator's confidential CTTT balance handle (cheap, no relayer),
-// lets them mint 500 test CTTT from the TokenOps faucet, and reveals the
-// plaintext balance via user-decryption — the same seal/reveal move as the
-// claim flow. Pulls from Sealed §Typography (Geist Mono numbers) and the amber
-// accent for the single primary action. Not built: any auto-decrypt on mount —
-// revealing a confidential balance always costs one explicit signature.
+// Faucet nudge for the operator composer. Shown only while the connected wallet
+// holds no confidential CTTT — a zero balance handle is readable gaslessly, so
+// no signature is spent to decide visibility. Minting 500 CTTT from the TokenOps
+// testnet faucet flips the panel to a brief success note, then it retires itself.
+// Pulls from Sealed §Typography (Geist Mono label + number, Geist Sans notice)
+// and the single amber accent for the one primary action. Not built: any
+// confidential-balance reveal — a nonzero handle is enough to know the operator
+// is funded, and revealing the exact figure would cost a signature this nudge
+// doesn't need.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { useZamaSDK } from "@zama-fhe/react-sdk";
 import { sepolia } from "viem/chains";
 import type { Hex } from "viem";
 import { TestnetFaucetClient, FaucetSupplyExhaustedError } from "@tokenops/sdk/testnet-faucet";
-import { toast } from "sonner";
-import Button from "@/components/design/Button";
-import { CTTT_SEPOLIA, TOKEN_DECIMALS } from "@/lib/tokenops";
+import { TOKEN_DECIMALS } from "@/lib/tokenops";
 
 const MINT_AMOUNT = BigInt(500) * BigInt(10) ** BigInt(TOKEN_DECIMALS);
 
-interface FaucetPanelProps {
-  /** When set, a revealed balance below this many whole CTTT is flagged as short. */
-  requiredAmount?: number;
-}
-
-export default function FaucetPanel({ requiredAmount }: FaucetPanelProps) {
+export default function FaucetPanel() {
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
   const publicClient = usePublicClient({ chainId: sepolia.id });
   const { data: walletClient } = useWalletClient();
-  const sdk = useZamaSDK();
 
   const faucet = useMemo(
     () => (publicClient ? new TestnetFaucetClient({ publicClient, walletClient: walletClient ?? undefined }) : null),
@@ -38,10 +32,11 @@ export default function FaucetPanel({ requiredAmount }: FaucetPanelProps) {
   );
 
   const [handle, setHandle] = useState<Hex | null>(null);
-  const [balance, setBalance] = useState<number | null>(null);
   const [reading, setReading] = useState(false);
   const [minting, setMinting] = useState(false);
-  const [revealing, setRevealing] = useState(false);
+  const [minted, setMinted] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loadHandle = useCallback(async (): Promise<Hex | null> => {
     if (!faucet || !address) {
@@ -62,37 +57,10 @@ export default function FaucetPanel({ requiredAmount }: FaucetPanelProps) {
   }, [faucet, address]);
 
   useEffect(() => {
-    setBalance(null);
     void loadHandle();
   }, [loadHandle]);
 
   const empty = handle !== null && BigInt(handle) === BigInt(0);
-
-  const revealHandle = useCallback(
-    async (h: Hex) => {
-      if (BigInt(h) === BigInt(0)) {
-        setBalance(0);
-        return;
-      }
-      const cleartext = await sdk.decryption.decryptValues([
-        { encryptedValue: h, contractAddress: CTTT_SEPOLIA },
-      ]);
-      setBalance(Number(cleartext[h]) / 10 ** TOKEN_DECIMALS);
-    },
-    [sdk]
-  );
-
-  async function reveal() {
-    if (!handle || empty) return;
-    setRevealing(true);
-    try {
-      await revealHandle(handle);
-    } catch {
-      toast.error("Decryption failed. Try again.");
-    } finally {
-      setRevealing(false);
-    }
-  }
 
   async function mint() {
     if (!faucet || !walletClient) {
@@ -100,88 +68,67 @@ export default function FaucetPanel({ requiredAmount }: FaucetPanelProps) {
       return;
     }
     setMinting(true);
+    setError(null);
     try {
       await faucet.mintConfidential({ amount: MINT_AMOUNT });
-      toast.success("500 CTTT added to your wallet.");
-      const wasRevealed = balance !== null;
-      const fresh = await loadHandle();
-      if (wasRevealed && fresh) {
-        try {
-          await revealHandle(fresh);
-        } catch {
-          /* keep the prior number; the toast already confirmed the mint */
-        }
-      }
+      setMinted(true);
+      void loadHandle();
+      setTimeout(() => setDismissed(true), 2000);
     } catch (err) {
       if (err instanceof FaucetSupplyExhaustedError) {
-        toast.error("Test token supply exhausted — contact the Tacet team.");
+        setError("Test token supply is exhausted — contact the Tacet team.");
       } else {
-        toast.error("Minting failed. Check your wallet and try again.");
+        setError("Mint failed. Make sure your wallet holds a little Sepolia ETH for gas, then try again.");
       }
     } finally {
       setMinting(false);
     }
   }
 
-  const short = requiredAmount !== undefined && balance !== null && balance < requiredAmount;
+  if (dismissed) return null;
+  // Operator already holds confidential CTTT — nothing to nudge.
+  if (isConnected && handle !== null && !empty && !minted) return null;
 
   return (
-    <div className="border border-ink-200 rounded-card bg-ink-50 p-24">
-      <div className="flex items-center justify-between mb-16">
-        <span className="text-label text-ink-400 uppercase tracking-wider">Test token balance</span>
-        {isConnected && !empty && handle !== null && (
-          balance !== null ? (
-            <span className="font-mono text-h3 text-ink-1000 tabular-nums">
-              {balance.toLocaleString()} <span className="text-ink-400">CTTT</span>
-            </span>
-          ) : (
-            <span className="font-mono text-code text-ink-400 uppercase tracking-wider">Sealed</span>
-          )
+    <div className="border-0.5 border-ink-200 rounded-input bg-card" style={{ padding: "20px 24px" }}>
+      <div className="mb-8 flex items-center justify-between">
+        <span className="font-mono text-[10px] uppercase tracking-[1px] text-ink-400">CTTT balance</span>
+        {isConnected && (empty || minted) && (
+          <span className="font-mono text-[20px] tabular-nums text-ink-1000">{minted ? "500" : "0"}</span>
         )}
       </div>
 
       {!isConnected ? (
         <>
-          <p className="text-small text-ink-600 mb-16">
+          <p className="mb-16 font-sans text-[14px] text-ink-600">
             Connect a wallet to check your test token balance.
           </p>
-          <Button variant="secondary" onClick={() => openConnectModal?.()}>
+          <button
+            onClick={() => openConnectModal?.()}
+            className="rounded-pill border border-ink-200 font-sans text-[14px] font-medium text-ink-1000 transition-colors hover:border-ink-600"
+            style={{ padding: "10px 24px" }}
+          >
             Connect wallet
-          </Button>
+          </button>
         </>
       ) : reading && handle === null ? (
-        <div className="h-[20px] w-32 rounded-redaction bg-ink-100 animate-fade-in" />
-      ) : empty ? (
-        <>
-          <p className="text-body text-ink-1000 mb-8">You need CTTT test tokens to run a campaign.</p>
-          <p className="text-small text-ink-600 mb-16">Click below to mint 500 CTTT to your wallet.</p>
-          <Button variant="accent" onClick={mint} loading={minting}>
-            {minting ? "Minting tokens…" : "Mint test tokens"}
-          </Button>
-        </>
+        <div className="h-[20px] w-32 animate-fade-in rounded-redaction bg-ink-100" />
+      ) : minted ? (
+        <p className="font-mono text-[12px] text-ink-400">500 CTTT added to your wallet.</p>
       ) : (
         <>
-          {balance === null ? (
-            <p className="text-small text-ink-600 mb-16">
-              Your balance is sealed. Reveal it to yourself before setting a budget.
-            </p>
-          ) : short ? (
-            <p className="text-small text-ink-1000 mb-16">
-              Below the {requiredAmount?.toLocaleString()} CTTT budget. Mint more to cover it.
-            </p>
-          ) : (
-            <p className="text-small text-ink-600 mb-16">Enough to fund a campaign.</p>
-          )}
-          <div className="flex gap-12">
-            {balance === null && (
-              <Button variant="secondary" onClick={reveal} loading={revealing}>
-                {revealing ? "Revealing…" : "Reveal balance"}
-              </Button>
-            )}
-            <Button variant={short ? "accent" : "secondary"} onClick={mint} loading={minting}>
-              {minting ? "Minting tokens…" : "Mint 500 more"}
-            </Button>
-          </div>
+          <p className="mb-16 font-sans text-[14px] text-ink-600">
+            You need CTTT test tokens to run a campaign.
+          </p>
+          <button
+            onClick={mint}
+            disabled={minting}
+            className="rounded-pill bg-accent font-sans text-[14px] font-medium text-ink-1000 transition-opacity hover:opacity-90 disabled:pointer-events-none"
+            style={{ padding: "10px 24px", opacity: minting ? 0.7 : 1 }}
+          >
+            {minting ? "Minting…" : "Mint 500 CTTT →"}
+          </button>
+          {error && <p className="mt-12 font-mono text-[12px] text-ink-400">{error}</p>}
         </>
       )}
     </div>

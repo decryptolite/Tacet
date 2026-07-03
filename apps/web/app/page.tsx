@@ -21,8 +21,12 @@ function Hero() {
     <section className="max-w-content mx-auto px-8 md:px-16 pt-24 pb-32">
       {/* Editorial headline — signature move #6: period-as-emphasis */}
       <div className="max-w-[36rem] mb-16">
-        <h1 className="font-serif text-display text-ink-1000 tracking-tight">
-          Paid. Not <em className="italic text-accent">published</em>.
+        <h1
+          className="font-serif text-ink-1000"
+          style={{ fontSize: "clamp(3rem, 6.5vw, 4.5rem)", lineHeight: 0.95, letterSpacing: "-0.02em" }}
+        >
+          <span className="block">Paid. Not</span>
+          <span className="block italic text-accent">published.</span>
         </h1>
         <p className="mt-8 text-body text-ink-600 max-w-prose">
           A maintainer ranks contributors. Each receives a sealed allocation.

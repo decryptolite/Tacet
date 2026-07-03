@@ -77,9 +77,20 @@ export default function ClaimExperience({ data }: { data: ClaimData }) {
     <div className="flex flex-1 flex-col">
       <div className="flex flex-1 flex-col justify-center text-center">
         {phase === "sealed" && (
-          <p className="mx-auto mb-32 max-w-prose text-body text-ink-600">
-            You have a sealed allocation from{" "}
-            <span className="text-ink-1000">{campaign.maintainer}</span>.
+          <div className="mb-24 flex flex-col items-center gap-16">
+            <span className="rounded-pill border border-ink-200 px-3 py-1 font-mono text-[9px] uppercase tracking-[1px] text-ink-400">
+              Pending claim
+            </span>
+            <p className="max-w-prose text-body text-ink-600">
+              You have a sealed allocation from{" "}
+              <span className="text-ink-1000">{campaign.maintainer}</span>.
+            </p>
+          </div>
+        )}
+
+        {phase === "sealed" && (
+          <p className="mb-8 font-mono text-[10px] uppercase tracking-[1px] text-ink-400">
+            Your allocation
           </p>
         )}
 
@@ -87,7 +98,7 @@ export default function ClaimExperience({ data }: { data: ClaimData }) {
           {phase === "revealing" || phase === "revealed" || phase === "claiming" || (phase === "claimed" && display !== null) ? (
             <RevealSequence handle={recipient.encryptedAmountHandle} decryptedValue={display} />
           ) : (
-            <RedactionBar width={220} className="!h-[56px]" />
+            <RedactionBar width="100%" height={48} cipher className="max-w-[260px]" />
           )}
         </div>
 
@@ -120,10 +131,6 @@ export default function ClaimExperience({ data }: { data: ClaimData }) {
           <Button variant="secondary" className="w-full" disabled>
             Campaign expired
           </Button>
-        ) : !isConnected ? (
-          <Button variant="primary" className="w-full" onClick={() => openConnectModal?.()}>
-            Connect a wallet to continue
-          </Button>
         ) : phase === "revealed" ? (
           <Button variant="accent" className="w-full" onClick={handleClaim} loading={claim.isPending}>
             Claim {display} {campaign.token}
@@ -133,14 +140,14 @@ export default function ClaimExperience({ data }: { data: ClaimData }) {
             Signing with wallet…
           </Button>
         ) : (
-          <Button
-            variant="primary"
-            className="w-full"
-            disabled={phase === "revealing"}
+          // Sealed reveal CTA — serif ink text on the card, never a filled button.
+          <button
             onClick={handleReveal}
+            disabled={phase === "revealing"}
+            className="mx-auto block min-h-[44px] font-serif text-[15px] font-bold text-ink-1000 transition-opacity duration-fast ease-sealed hover:opacity-70 disabled:opacity-50"
           >
-            {phase === "revealing" ? "Decrypting to your wallet…" : "Reveal my share"}
-          </Button>
+            {phase === "revealing" ? "Decrypting to your wallet…" : "Reveal my share →"}
+          </button>
         )}
       </div>
     </div>

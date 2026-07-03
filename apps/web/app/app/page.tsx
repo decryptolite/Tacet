@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Nav from "@/components/shared/Nav";
 import ZamaGate from "@/components/shared/ZamaGate";
+import FaucetPanel from "@/components/operator/FaucetPanel";
 import RecipientsStep from "@/components/operator/RecipientsStep";
 import AllocationsStep from "@/components/operator/AllocationsStep";
 import ReviewStep from "@/components/operator/ReviewStep";
@@ -11,9 +12,9 @@ import type { Contributor, Formula } from "@/lib/github";
 
 type Step = 1 | 2 | 3;
 
-const STEP_LABELS: Record<Step, string> = {
-  1: "Recipients",
-  2: "Allocations",
+const STEP_HEADINGS: Record<Step, string> = {
+  1: "Choose recipients",
+  2: "Set allocations",
   3: "Review and seal",
 };
 
@@ -59,23 +60,17 @@ export default function ComposerPage() {
           <span>{new Date().toISOString().slice(0, 10).replace(/-/g, ".")}</span>
         </div>
 
-        {/* Step indicator */}
-        <div className="flex items-center gap-0 mb-12 border border-ink-200 rounded-pill overflow-hidden">
-          {([1, 2, 3] as Step[]).map((s) => (
-            <div
-              key={s}
-              className={[
-                "flex-1 py-2.5 text-center text-small transition-colors",
-                step === s
-                  ? "bg-ink-1000 text-ink-50 font-medium"
-                  : step > s
-                  ? "bg-ink-100 text-ink-600"
-                  : "bg-ink-50 text-ink-400",
-              ].join(" ")}
-            >
-              {STEP_LABELS[s]}
-            </div>
-          ))}
+        {/* Faucet nudge — self-hides once the operator holds test tokens */}
+        <div className="mb-12">
+          <FaucetPanel />
+        </div>
+
+        {/* Step counter + heading */}
+        <div className="mb-12">
+          <p className="mb-3 font-mono text-[11px] uppercase tracking-[2px] text-ink-400">
+            Step {step} of 3
+          </p>
+          <h1 className="font-serif text-[40px] leading-none text-ink-1000">{STEP_HEADINGS[step]}</h1>
         </div>
 
         {/* Step content — wrapped in ZamaGate: every step touches the relayer

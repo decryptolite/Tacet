@@ -7,8 +7,8 @@ export default function Nav() {
   return (
     <header className="sticky top-0 z-40 bg-ink-50/90 backdrop-blur-sm border-b border-ink-100">
       <div className="max-w-content mx-auto px-8 md:px-16 h-14 flex items-center justify-between">
-        <Link href="/" className="font-serif text-[1.125rem] text-ink-1000 tracking-tight">
-          tacet<span className="text-accent">.</span>
+        <Link href="/" className="font-serif italic text-[1.5rem] leading-none text-ink-1000 tracking-tight">
+          tacet<span className="not-italic text-accent">.</span>
         </Link>
 
         <nav className="flex items-center gap-3">

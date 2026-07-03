@@ -190,8 +190,8 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
 
       <div>
         <div className="grid grid-cols-[1fr_auto] gap-4 py-2 border-b border-ink-200 mb-1">
-          <span className="text-label text-ink-400 uppercase tracking-wider">Contributor</span>
-          <span className="text-label text-ink-400 uppercase tracking-wider text-right">Allocation (cUSDT)</span>
+          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px]">Contributor</span>
+          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px] text-right">Allocation (cUSDT)</span>
         </div>
         <div className="divide-y divide-ink-100">
           {active.map((c) => (
@@ -247,7 +247,7 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 16 }}
               transition={{ duration: duration.standard, ease: ease.sealed }}
-              className="w-full max-w-sm border border-ink-200 rounded-card bg-ink-50 p-24"
+              className="w-full max-w-sm border-0.5 border-ink-200 rounded-card bg-card p-24"
             >
               <h2 className="font-sans text-h3 text-ink-1000 mb-4">Seal and deploy</h2>
               <p className="text-small text-ink-600 mb-6">

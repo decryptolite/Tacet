@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import Button from "@/components/design/Button";
-import FaucetPanel from "@/components/operator/FaucetPanel";
 import { computeAllocations, type Contributor, type Formula } from "@/lib/github";
 
 interface AllocationsStepProps {
@@ -45,8 +44,6 @@ export default function AllocationsStep({ contributors, selected, onBack, onNext
 
   return (
     <div className="space-y-8">
-      <FaucetPanel requiredAmount={budget} />
-
       {/* Budget */}
       <div>
         <label htmlFor="budget" className="block text-label text-ink-600 mb-2 uppercase tracking-wider">
@@ -94,9 +91,9 @@ export default function AllocationsStep({ contributors, selected, onBack, onNext
       {/* Allocation table */}
       <div>
         <div className="grid grid-cols-[1fr_auto_auto] gap-4 py-2 border-b border-ink-200 mb-1">
-          <span className="text-label text-ink-400 uppercase tracking-wider">Contributor</span>
-          <span className="text-label text-ink-400 uppercase tracking-wider text-right">Commits</span>
-          <span className="text-label text-ink-400 uppercase tracking-wider text-right">Allocation (cUSDT)</span>
+          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px]">Contributor</span>
+          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px] text-right">Commits</span>
+          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px] text-right">Allocation (cUSDT)</span>
         </div>
 
         <div className="divide-y divide-ink-100">

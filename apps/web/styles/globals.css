@@ -8,29 +8,48 @@
 
 @layer base {
   :root {
-    --ink-1000: #0E0E0C;
-    --ink-800: #2A2A26;
-    --ink-600: #5A5A53;
-    --ink-400: #989590;
-    --ink-200: #D8D5CE;
-    --ink-100: #EFECE3;
-    --ink-50: #FAF8F2;
-    --accent: #C89060;
-    --state-claimable: #6B8E5A;
-    --state-error: #A85A3F;
+    /* Sealed design tokens — exact values from the design source. */
+    --paper: #faf8f2; /* page background, everywhere */
+    --card: #fcfbf6; /* card / surface */
+    --border-1: #efece4;
+    --border-2: #e6e3dc;
+    --border-3: #d8d5ce;
+    --ink: #0e0e0c;
+    --ink-2: #5a5a53;
+    --ink-3: #989590;
+    --ink-4: #b7b3ad;
+    --ink-5: #c0bcb5;
+    --amber: #c89060;
+    --cipher: rgba(255, 255, 255, 0.22); /* redaction bar glyphs */
+    --serif: var(--font-instrument-serif), Georgia, serif;
+    --mono: var(--font-geist-mono), ui-monospace, monospace;
+
+    /* Legacy aliases retained for existing utilities / focus ring. */
+    --ink-1000: var(--ink);
+    --ink-800: #2a2a26;
+    --ink-600: var(--ink-2);
+    --ink-400: var(--ink-3);
+    --ink-200: var(--border-3);
+    --ink-100: var(--border-1);
+    --ink-50: var(--paper);
+    --accent: var(--amber);
+    --state-claimable: #6b8e5a;
+    --state-error: #a85a3f;
   }
 
   html {
-    background-color: var(--ink-50);
-    color: var(--ink-1000);
+    background-color: var(--paper);
+    color: var(--ink);
     font-family: var(--font-geist-sans), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    background-color: var(--ink-50);
+    background-color: var(--paper);
+    color: var(--ink);
     min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* Tabular numerals everywhere — columns tabulate */
@@ -61,22 +80,22 @@
 @layer utilities {
   /* Section dividers */
   .rule {
-    border-top: 0.5px solid var(--ink-200);
+    border-top: 0.5px solid var(--border-2);
   }
 
-  /* Document header mono style */
+  /* Document header mono style — mono 10px, ink-4, 1px tracking */
   .doc-header {
-    font-family: var(--font-geist-mono), monospace;
-    font-size: 0.75rem;
-    color: var(--ink-400);
-    letter-spacing: 0.02em;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-4);
+    letter-spacing: 1px;
   }
 
   /* Redaction bar */
   .redaction {
     display: inline-block;
     height: 14px;
-    background-color: var(--ink-1000);
+    background-color: var(--ink);
     border-radius: 2px;
     vertical-align: middle;
   }
