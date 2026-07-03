@@ -71,8 +71,10 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("")}` as Hex;
 
+    let currentStep = "initializing";
     try {
       setProgress("Encrypting and funding pool…");
+      currentStep = "deploying pool";
       const { airdrop } = await deploy.mutateAsync({
         params: {
           token: CTTT_SEPOLIA,
@@ -88,6 +90,7 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
       if (REGISTRY_ADDRESS !== "0x0000000000000000000000000000000000000000") {
         setProgress("Registering campaign…");
         const repoLabel = repoUrl.replace(/^https?:\/\//, "").replace(/^github\.com\//, "");
+        currentStep = "registering campaign";
         await registerCampaign(walletClient, airdrop, `${repoLabel} rewards`, repoUrl, deadline);
       }
 
@@ -98,12 +101,14 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
         const recipientAddress = c.address as Address;
         setProgress(`Signing claim ${i + 1} of ${recipients.length}…`);
 
+        currentStep = `encrypting recipient ${i + 1}`;
         const encryptedInput = await encryptUint64({
           encryptor,
           contractAddress: airdrop,
           userAddress: recipientAddress,
           value: toRawUnits(amounts[c.githubHandle] ?? 0),
         });
+        currentStep = `signing claim ${i + 1}`;
         const signature = await signClaim.mutateAsync({
           airdropAddress: airdrop,
           recipient: recipientAddress,
@@ -123,9 +128,17 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
       setAirdropAddress(airdrop);
       setSealed(true);
       toast.success("Campaign sealed and deployed.");
-    } catch (err) {
-      const raw = err instanceof Error ? err.message : "";
-      toast.error(raw.length > 0 && raw.length < 100 ? raw : "Deployment failed. Check your wallet.");
+    } catch (err: unknown) {
+      const e = err as { shortMessage?: string; message?: string; cause?: unknown };
+
+      // Always log the full error for debugging
+      console.error("[tacet] seal failed at step:", currentStep, err);
+
+      // viem exposes shortMessage which is clean and human-readable
+      const msg = e?.shortMessage ?? e?.message ?? "Unknown error";
+
+      // Show the real message regardless of length
+      toast.error(msg);
     } finally {
       setProgress("");
     }
