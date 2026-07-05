@@ -1,4 +1,4 @@
-import { createPublicClient, http, type Address } from "viem";
+import { createPublicClient, http, isAddress, zeroAddress, type Address } from "viem";
 import { sepolia } from "viem/chains";
 import { createConfidentialAirdropClient } from "@tokenops/sdk/fhe-airdrop";
 import { decodeClaimLinkId, type EncryptedClaimPayload } from "@/lib/tokenops";
@@ -47,7 +47,29 @@ export async function getClaimData(id: string): Promise<ClaimData> {
   const decoded = decodeClaimLinkId(id);
   if (!decoded) throw new Error("This claim link is invalid.");
 
-  const meta = await fetchCampaignMeta(decoded.airdropAddress);
+  // Defensive validation — old / test links carry a placeholder recipient
+  // (0x1111…1111), a missing signature, or a malformed handle. Reject before any
+  // RPC so a bad link renders a clean message instead of a runtime error.
+  const { recipientAddress, airdropAddress, claimPayload } = decoded;
+  const signature = claimPayload?.signature;
+  const handle = claimPayload?.encryptedInput?.handle;
+  const isPlaceholderRecipient = /^0x1{40}$/i.test(recipientAddress ?? "");
+  if (
+    !isAddress(recipientAddress) ||
+    recipientAddress === zeroAddress ||
+    isPlaceholderRecipient ||
+    !isAddress(airdropAddress) ||
+    airdropAddress === zeroAddress ||
+    !signature ||
+    !signature.startsWith("0x") ||
+    signature.length < 132 ||
+    !handle ||
+    handle.length !== 66
+  ) {
+    throw new Error("This claim link is invalid.");
+  }
+
+  const meta = await fetchCampaignMeta(airdropAddress);
   if (!meta) throw new Error("Campaign not found.");
 
   let claimed = false;

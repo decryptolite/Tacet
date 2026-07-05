@@ -50,20 +50,20 @@ export async function fetchCampaignMeta(airdropAddress: Address): Promise<{
   deadline: number;
   createdAt: number;
 } | null> {
-  const client = createPublicClient({ chain: sepolia, transport: http() });
-  const result = await client.readContract({
-    address: REGISTRY_ADDRESS,
-    abi: ABI,
-    functionName: "getCampaign",
-    args: [airdropAddress],
-  });
-  const [maintainer, title, repoUrl, deadline, createdAt] = result as [Address, string, string, number, number];
-  if (createdAt === 0) return null;
-  return {
-    maintainer,
-    title,
-    repoUrl,
-    deadline,
-    createdAt,
-  };
+  try {
+    const client = createPublicClient({ chain: sepolia, transport: http() });
+    const result = await client.readContract({
+      address: REGISTRY_ADDRESS,
+      abi: ABI,
+      functionName: "getCampaign",
+      args: [airdropAddress],
+    });
+    const [maintainer, title, repoUrl, deadline, createdAt] = result as [Address, string, string, number, number];
+    if (createdAt === 0) return null;
+    return { maintainer, title, repoUrl, deadline, createdAt };
+  } catch {
+    // Unknown address, unregistered campaign, or RPC hiccup — treat as not-found
+    // so the claim page renders a clean message rather than crashing the render.
+    return null;
+  }
 }
