@@ -58,12 +58,15 @@ export async function fetchCampaignMeta(airdropAddress: Address): Promise<{
       functionName: "getCampaign",
       args: [airdropAddress],
     });
+    // TEMP diagnostic — REGISTRY_ADDRESS, the looked-up airdrop, and the raw response.
+    console.log("[tacet] fetchCampaignMeta OK", { REGISTRY_ADDRESS, airdropAddress, result });
     const [maintainer, title, repoUrl, deadline, createdAt] = result as [Address, string, string, number, number];
     if (createdAt === 0) return null;
     return { maintainer, title, repoUrl, deadline, createdAt };
-  } catch {
+  } catch (err) {
     // Unknown address, unregistered campaign, or RPC hiccup — treat as not-found
     // so the claim page renders a clean message rather than crashing the render.
+    console.error("[tacet] fetchCampaignMeta FAILED", { REGISTRY_ADDRESS, airdropAddress, err });
     return null;
   }
 }
