@@ -7,6 +7,15 @@ export const CTTT_SEPOLIA = "0x258F9D60dc023870e4E3109c894D834D5377361a" as cons
 /** The only chain with a TokenOps FHE Airdrop factory deployment. */
 export const AIRDROP_CHAIN_ID = 11155111 as const;
 
+/**
+ * ConfidentialAirdropFactory on Sepolia — the exact address the SDK's create hook
+ * resolves from (DEPLOYED_ADDRESSES.fheAirdrop.confidentialAirdropFactory[11155111]).
+ * Kept as a local constant because @tokenops/sdk only re-exports its address
+ * accessor from barrels that also pull @zama-fhe/sdk symbols absent in the pinned
+ * 3.x (RelayerWeb / SepoliaConfig / MainnetConfig), which fails the build.
+ */
+export const FACTORY_ADDRESS = "0xbE6A3B78B36684fFee48De77d47Bc3393F5Acd4c" as const;
+
 /** ERC-7984 confidential tokens on TokenOps use 6 decimals. */
 export const TOKEN_DECIMALS = 6;
 

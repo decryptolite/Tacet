@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { useAccount, useWalletClient } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import {
   useCreateAndFundConfidentialAirdropAndGetAddress,
@@ -11,11 +11,35 @@ import {
   encryptUint64,
 } from "@tokenops/sdk/fhe-airdrop/react";
 import { useZamaSDK } from "@zama-fhe/react-sdk";
+import { sepolia } from "viem/chains";
 import type { Address, Hex } from "viem";
 import Button from "@/components/design/Button";
 import DotLeaderRow from "@/components/design/DotLeaderRow";
 import { ease, duration } from "@/lib/design-tokens";
-import { CTTT_SEPOLIA, toRawUnits, encodeClaimLinkId, toEncryptor } from "@/lib/tokenops";
+import {
+  AIRDROP_CHAIN_ID,
+  CTTT_SEPOLIA,
+  FACTORY_ADDRESS,
+  toRawUnits,
+  encodeClaimLinkId,
+  toEncryptor,
+} from "@/lib/tokenops";
+
+// ERC-7984 operator authorization: setOperator(address operator, uint48 until).
+// Called directly via viem because @tokenops/sdk's setOperator helper is only
+// reachable through a barrel that pulls @zama-fhe/sdk exports missing in 3.x.
+const ERC7984_SET_OPERATOR_ABI = [
+  {
+    type: "function",
+    name: "setOperator",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "operator", type: "address" },
+      { name: "until", type: "uint48" },
+    ],
+    outputs: [],
+  },
+] as const;
 import { registerCampaign, REGISTRY_ADDRESS } from "@/lib/registry";
 import type { Contributor, Formula } from "@/lib/github";
 
@@ -44,6 +68,7 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
   const { isConnected, address } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { data: walletClient } = useWalletClient();
+  const publicClient = usePublicClient({ chainId: sepolia.id });
   const zamaSDK = useZamaSDK();
   const encryptor = useMemo(() => toEncryptor(zamaSDK.relayer), [zamaSDK]);
   const deploy = useCreateAndFundConfidentialAirdropAndGetAddress({
@@ -64,7 +89,7 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
   const deploying = deploy.isPending || signClaim.isPending || progress.length > 0;
 
   async function handleDeploy() {
-    if (!address || !walletClient) { openConnectModal?.(); return; }
+    if (!address || !walletClient || !publicClient) { openConnectModal?.(); return; }
     setShowModal(false);
 
     const userSalt = `0x${Array.from(crypto.getRandomValues(new Uint8Array(32)))
@@ -73,7 +98,26 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
 
     let currentStep = "initializing";
     try {
-      setProgress("Encrypting and funding pool…");
+      // FACTORY_ADDRESS mirrors the SDK registry the create hook resolves from, so
+      // these two logs — and the create tx's `to` — must all match on the next run.
+      console.log("[tacet] setOperator spender (factory):", FACTORY_ADDRESS);
+      console.log(`[tacet] create call factory (SDK registry, chain ${AIRDROP_CHAIN_ID}):`, FACTORY_ADDRESS);
+
+      // Fund-on-create pulls CTTT from the maintainer, so the factory must be an
+      // ERC-7984 operator first, scoped to the campaign deadline (least privilege).
+      currentStep = "authorizing factory as operator";
+      setProgress("Authorizing factory to fund — confirm in your wallet…");
+      const authHash = await walletClient.writeContract({
+        address: CTTT_SEPOLIA,
+        abi: ERC7984_SET_OPERATOR_ABI,
+        functionName: "setOperator",
+        args: [FACTORY_ADDRESS, deadline],
+        account: address,
+        chain: sepolia,
+      });
+      await publicClient.waitForTransactionReceipt({ hash: authHash });
+
+      setProgress("Funding pool — confirm the second wallet prompt…");
       currentStep = "deploying pool";
       const { airdrop } = await deploy.mutateAsync({
         params: {
