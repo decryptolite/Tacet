@@ -11,8 +11,9 @@ export const REGISTRY_ADDRESS = (
 ) as Address;
 
 const ABI = parseAbi([
+  "struct Campaign { address maintainer; string title; string repoUrl; uint40 deadline; uint40 createdAt; }",
   "function register(address airdropAddress, string calldata title, string calldata repoUrl, uint40 deadline) external",
-  "function getCampaign(address airdropAddress) external view returns (address maintainer, string title, string repoUrl, uint40 deadline, uint40 createdAt)",
+  "function getCampaign(address airdropAddress) external view returns (Campaign)",
 ]);
 
 /**
@@ -58,11 +59,20 @@ export async function fetchCampaignMeta(airdropAddress: Address): Promise<{
       functionName: "getCampaign",
       args: [airdropAddress],
     });
-    // TEMP diagnostic — REGISTRY_ADDRESS, the looked-up airdrop, and the raw response.
-    console.log("[tacet] fetchCampaignMeta OK", { REGISTRY_ADDRESS, airdropAddress, result });
-    const [maintainer, title, repoUrl, deadline, createdAt] = result as [Address, string, string, number, number];
-    if (createdAt === 0) return null;
-    return { maintainer, title, repoUrl, deadline, createdAt };
+    // viem returns a named tuple as an object, not an array.
+    const { maintainer, title, repoUrl, deadline, createdAt } = result;
+    const meta = { maintainer, title, repoUrl, deadline: Number(deadline), createdAt: Number(createdAt) };
+    // TEMP diagnostic — confirm the parsed campaign decodes correctly.
+    console.log("[tacet] fetchCampaignMeta OK", {
+      REGISTRY_ADDRESS,
+      airdropAddress,
+      maintainer,
+      title,
+      deadline: meta.deadline,
+      createdAt: meta.createdAt,
+    });
+    if (meta.createdAt === 0) return null;
+    return meta;
   } catch (err) {
     // Unknown address, unregistered campaign, or RPC hiccup — treat as not-found
     // so the claim page renders a clean message rather than crashing the render.
