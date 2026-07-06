@@ -16,6 +16,9 @@ packages/contracts/cache/
 # Claude Code session data
 .claude/
 
+# Internal AI / prompt / working notes — kept locally, never submitted
+private/
+
 # OS / editor noise
 .DS_Store
 Thumbs.db

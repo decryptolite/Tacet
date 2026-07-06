@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, encodeFunctionData, parseAbi } from "viem";
+import { createPublicClient, http, encodeFunctionData, parseAbi } from "viem";
 import { sepolia } from "viem/chains";
 import type { Address, WalletClient } from "viem";
 
@@ -62,21 +62,11 @@ export async function fetchCampaignMeta(airdropAddress: Address): Promise<{
     // viem returns a named tuple as an object, not an array.
     const { maintainer, title, repoUrl, deadline, createdAt } = result;
     const meta = { maintainer, title, repoUrl, deadline: Number(deadline), createdAt: Number(createdAt) };
-    // TEMP diagnostic — confirm the parsed campaign decodes correctly.
-    console.log("[tacet] fetchCampaignMeta OK", {
-      REGISTRY_ADDRESS,
-      airdropAddress,
-      maintainer,
-      title,
-      deadline: meta.deadline,
-      createdAt: meta.createdAt,
-    });
     if (meta.createdAt === 0) return null;
     return meta;
-  } catch (err) {
+  } catch {
     // Unknown address, unregistered campaign, or RPC hiccup — treat as not-found
     // so the claim page renders a clean message rather than crashing the render.
-    console.error("[tacet] fetchCampaignMeta FAILED", { REGISTRY_ADDRESS, airdropAddress, err });
     return null;
   }
 }

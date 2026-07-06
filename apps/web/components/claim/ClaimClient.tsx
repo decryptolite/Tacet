@@ -26,8 +26,7 @@ export default function ClaimClient({ id }: { id: string }) {
       try {
         const data = await getClaimData(id);
         if (!cancelled) setState({ status: "ready", data });
-      } catch (err) {
-        console.error("[tacet] claim load failed:", err);
+      } catch {
         if (!cancelled) setState({ status: "invalid" });
       }
     })();

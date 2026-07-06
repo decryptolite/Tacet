@@ -81,6 +81,7 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
   const [recipientLinks, setRecipientLinks] = useState<RecipientLink[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [progress, setProgress] = useState("");
+  const [copied, setCopied] = useState<string | null>(null);
 
   const active = contributors.filter((c) => selected.has(c.githubHandle));
   const missingAddress = active.filter((c) => !c.address);
@@ -188,9 +189,11 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
     }
   }
 
-  function copyLink(url: string) {
+  function copyLink(githubHandle: string, url: string) {
     navigator.clipboard.writeText(url);
-    toast.success("Claim link copied.");
+    setCopied(githubHandle);
+    toast.success("Link copied");
+    setTimeout(() => setCopied((h) => (h === githubHandle ? null : h)), 1800);
   }
 
   if (sealed) {
@@ -224,10 +227,10 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
             <div key={r.githubHandle} className="flex items-center justify-between gap-4 py-3">
               <span className="font-mono text-code text-ink-800">@{r.githubHandle}</span>
               <button
-                onClick={() => copyLink(r.url)}
+                onClick={() => copyLink(r.githubHandle, r.url)}
                 className="min-h-[44px] text-small text-ink-600 underline-offset-4 hover:underline"
               >
-                Copy link
+                {copied === r.githubHandle ? "Link copied" : "Copy link"}
               </button>
             </div>
           ))}
@@ -238,6 +241,13 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
 
   return (
     <div className="space-y-8">
+      {active.length > 30 && (
+        <div className="rounded-card border-0.5 border-amber/40 bg-amber/[0.06] px-4 py-3 text-small text-ink-800">
+          This release supports up to 30 recipients per campaign. You have {active.length}.
+          Larger campaigns via Merkle-root batching are on the roadmap.
+        </div>
+      )}
+
       <div>
         <DotLeaderRow label="Formula" value={FORMULA_LABELS[formula]} />
         <DotLeaderRow label="Recipients" value={`${active.length}`} mono />
@@ -276,6 +286,12 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
           Go back and upload a CSV with address, github_handle, commits.
         </p>
       )}
+
+      <p className="text-small text-ink-600">
+        Sealing requires {2 + active.length} quick signatures — 2 to authorize and fund,
+        then 1 gasless authorization per recipient ({active.length} recipients).
+        These are signatures, not transactions.
+      </p>
 
       <div className="flex justify-between pt-4 border-t border-ink-100">
         <Button variant="secondary" onClick={onBack} disabled={deploying}>← Allocations</Button>
