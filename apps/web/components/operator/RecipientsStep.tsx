@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import { Check } from "lucide-react";
+import { isAddress, type Address } from "viem";
 import Button from "@/components/design/Button";
 import FaucetPanel from "@/components/operator/FaucetPanel";
 import { fetchContributors, parseContributorsCsv, type Contributor } from "@/lib/github";
@@ -16,6 +18,10 @@ export default function RecipientsStep({ onNext }: RecipientsStepProps) {
   const [error, setError] = useState<string | null>(null);
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Handles the maintainer has started typing a wallet into inline. Presence of a
+  // key (even "") keeps the field open for editing/clearing after a valid entry,
+  // and distinguishes GitHub rows from CSV rows (which never enter this map).
+  const [walletDrafts, setWalletDrafts] = useState<Record<string, string>>({});
   const csvInputRef = useRef<HTMLInputElement>(null);
 
   async function handleFetch() {
@@ -56,7 +62,25 @@ export default function RecipientsStep({ onNext }: RecipientsStepProps) {
     });
   }
 
+  // Fill the existing optional `address` field on a single row (immutable). A
+  // non-address (including empty) clears it, so the seal guard keeps blocking.
+  function handleWalletInput(handle: string, raw: string) {
+    const value = raw.trim();
+    setWalletDrafts((prev) => ({ ...prev, [handle]: value }));
+    setContributors((prev) =>
+      prev.map((c) =>
+        c.githubHandle === handle
+          ? { ...c, address: isAddress(value) ? (value as Address) : undefined }
+          : c
+      )
+    );
+  }
+
   const canProceed = selected.size > 0;
+  // GitHub and CSV rows both hardcode additions to 0 today; hide the column
+  // rather than show a meaningless "+0k". Reappears automatically if ever populated.
+  const hasAdditions = contributors.some((c) => c.additions > 0);
+  const gridCols = hasAdditions ? "grid-cols-[1fr_auto_auto_auto]" : "grid-cols-[1fr_auto_auto]";
 
   return (
     <div className="space-y-8">
@@ -108,48 +132,83 @@ export default function RecipientsStep({ onNext }: RecipientsStepProps) {
       {/* Contributor list */}
       {contributors.length > 0 && (
         <div>
-          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 py-2 border-b border-ink-200 mb-1">
+          <div className={`grid ${gridCols} gap-4 py-2 border-b border-ink-200 mb-1`}>
             <span className="text-label text-ink-400 uppercase tracking-wider">Contributor</span>
             <span className="text-label text-ink-400 uppercase tracking-wider text-right">Commits</span>
-            <span className="text-label text-ink-400 uppercase tracking-wider text-right">Additions</span>
+            {hasAdditions && (
+              <span className="text-label text-ink-400 uppercase tracking-wider text-right">Additions</span>
+            )}
             <span className="text-label text-ink-400 uppercase tracking-wider text-right w-8"></span>
           </div>
 
           <div className="divide-y divide-ink-100">
             {contributors.map((c) => {
               const isSelected = selected.has(c.githubHandle);
+              const showWallet = isSelected && (!c.address || c.githubHandle in walletDrafts);
+              const walletValue = walletDrafts[c.githubHandle] ?? c.address ?? "";
+              const trimmed = walletValue.trim();
+              const walletValid = isAddress(trimmed);
+              const walletInvalid = trimmed.length > 0 && !walletValid;
               return (
-                <label
-                  key={c.githubHandle}
-                  className={[
-                    "grid grid-cols-[1fr_auto_auto_auto] gap-4 py-3 items-center cursor-pointer",
-                    "hover:bg-ink-100/40 -mx-2 px-2 rounded transition-colors",
-                    !isSelected && "opacity-40",
-                  ].join(" ")}
-                >
-                  <div className="flex items-center gap-3">
-                    <Image
-                      src={c.avatarUrl}
-                      alt={c.githubHandle}
-                      width={24}
-                      height={24}
-                      className="rounded-full flex-shrink-0"
+                <div key={c.githubHandle} className={isSelected ? "" : "opacity-40"}>
+                  <label
+                    className={`grid ${gridCols} gap-4 py-3 items-center cursor-pointer hover:bg-ink-100/40 -mx-2 px-2 rounded transition-colors`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src={c.avatarUrl}
+                        alt={c.githubHandle}
+                        width={24}
+                        height={24}
+                        className="rounded-full flex-shrink-0"
+                      />
+                      <span className="font-mono text-code text-ink-800">@{c.githubHandle}</span>
+                    </div>
+                    <span className="font-mono text-code text-ink-600 text-right tabular-nums">
+                      {c.commits.toLocaleString()}
+                    </span>
+                    {hasAdditions && (
+                      <span className="font-mono text-code text-ink-600 text-right tabular-nums">
+                        +{(c.additions / 1000).toFixed(0)}k
+                      </span>
+                    )}
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleRow(c.githubHandle)}
+                      className="w-4 h-4 accent-ink-1000"
                     />
-                    <span className="font-mono text-code text-ink-800">@{c.githubHandle}</span>
-                  </div>
-                  <span className="font-mono text-code text-ink-600 text-right tabular-nums">
-                    {c.commits.toLocaleString()}
-                  </span>
-                  <span className="font-mono text-code text-ink-600 text-right tabular-nums">
-                    +{(c.additions / 1000).toFixed(0)}k
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => toggleRow(c.githubHandle)}
-                    className="w-4 h-4 accent-ink-1000"
-                  />
-                </label>
+                  </label>
+
+                  {showWallet && (
+                    <div className="pb-3 pl-9">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          spellCheck={false}
+                          autoComplete="off"
+                          placeholder="0x…"
+                          value={walletValue}
+                          onChange={(e) => handleWalletInput(c.githubHandle, e.target.value)}
+                          className={[
+                            "flex-1 min-w-0 border rounded-input px-3 py-2 font-mono text-code text-ink-1000 placeholder:text-ink-400 bg-ink-50 focus:outline-none transition-colors",
+                            walletInvalid
+                              ? "border-state-error"
+                              : walletValid
+                                ? "border-state-claimable"
+                                : "border-ink-200 focus:border-ink-1000",
+                          ].join(" ")}
+                        />
+                        {walletValid && (
+                          <Check className="w-4 h-4 flex-shrink-0 text-state-claimable" aria-label="Valid address" />
+                        )}
+                      </div>
+                      {walletInvalid && (
+                        <p className="mt-1 text-code font-mono text-state-error">Not a valid wallet address.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
