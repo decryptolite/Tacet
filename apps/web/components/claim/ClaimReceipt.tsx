@@ -56,7 +56,17 @@ export default function ClaimReceipt({ campaign, amount, txHash, claimedAt }: Cl
           <ReceiptRow label="Amount" value={`${amount} ${campaign.token}`} valueSize={13} />
           <ReceiptRow label="Campaign" value={campaign.title} />
           <ReceiptRow label="Date" value={formatShortDate(claimedAt)} />
-          <ReceiptRow label="Transaction" value={truncate(txHash)} />
+          <a
+            href={`https://sepolia.etherscan.io/tx/${txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-baseline justify-between gap-4 py-1 hover:opacity-70"
+          >
+            <span className="font-mono text-[10px] uppercase tracking-[1px] text-ink-400">Transaction</span>
+            <span className="font-mono text-[12px] tabular-nums text-ink-1000 text-right underline-offset-4 hover:underline">
+              {truncate(txHash)}
+            </span>
+          </a>
         </div>
 
         <p className="mt-16 text-center font-mono text-[9px] tracking-[0.5px] text-ink-400">

@@ -4,6 +4,9 @@ import { hexToBytes, type Address, type Hex } from "viem";
 /** ConfidentialTokenopsTestToken (CTTT) on Sepolia — 6-decimal ERC-7984 backed by TTT. */
 export const CTTT_SEPOLIA = "0x258F9D60dc023870e4E3109c894D834D5377361a" as const;
 
+/** Display symbol for the confidential token — the single source of truth for UI labels. */
+export const TOKEN_SYMBOL = "CTTT" as const;
+
 /** The only chain with a TokenOps FHE Airdrop factory deployment. */
 export const AIRDROP_CHAIN_ID = 11155111 as const;
 

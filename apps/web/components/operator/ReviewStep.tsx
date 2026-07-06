@@ -20,6 +20,7 @@ import {
   AIRDROP_CHAIN_ID,
   CTTT_SEPOLIA,
   FACTORY_ADDRESS,
+  TOKEN_SYMBOL,
   toRawUnits,
   encodeClaimLinkId,
   toEncryptor,
@@ -251,14 +252,14 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
       <div>
         <DotLeaderRow label="Formula" value={FORMULA_LABELS[formula]} />
         <DotLeaderRow label="Recipients" value={`${active.length}`} mono />
-        <DotLeaderRow label="Total budget" value={`${budget.toLocaleString()} cUSDT`} mono />
-        <DotLeaderRow label="Total allocated" value={`${totalAllocated.toLocaleString()} cUSDT`} mono />
+        <DotLeaderRow label="Total budget" value={`${budget.toLocaleString()} ${TOKEN_SYMBOL}`} mono />
+        <DotLeaderRow label="Total allocated" value={`${totalAllocated.toLocaleString()} ${TOKEN_SYMBOL}`} mono />
       </div>
 
       <div>
         <div className="grid grid-cols-[1fr_auto] gap-4 py-2 border-b border-ink-200 mb-1">
           <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px]">Contributor</span>
-          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px] text-right">Allocation (cUSDT)</span>
+          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px] text-right">Allocation ({TOKEN_SYMBOL})</span>
         </div>
         <div className="divide-y divide-ink-100">
           {active.map((c) => (
@@ -328,7 +329,7 @@ export default function ReviewStep({ contributors, selected, repoUrl, budget, fo
                 You will sign one transaction plus one claim authorization per recipient. This cannot be undone.
               </p>
               <DotLeaderRow label="Recipients" value={`${active.length}`} mono />
-              <DotLeaderRow label="Total" value={`${totalAllocated.toLocaleString()} cUSDT`} mono />
+              <DotLeaderRow label="Total" value={`${totalAllocated.toLocaleString()} ${TOKEN_SYMBOL}`} mono />
               <div className="flex gap-3 mt-8">
                 <Button variant="secondary" className="flex-1" onClick={() => setShowModal(false)}>Cancel</Button>
                 <Button variant="accent" className="flex-1" onClick={handleDeploy}>Confirm</Button>

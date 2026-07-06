@@ -101,7 +101,7 @@ export default function ClaimExperience({ data }: { data: ClaimData }) {
             </span>
             <p className="max-w-prose text-body text-ink-600">
               You have a sealed allocation from{" "}
-              <span className="text-ink-1000">{campaign.maintainer}</span>.
+              <span className="font-mono text-ink-1000">{truncate(campaign.maintainer)}</span>.
             </p>
           </div>
         )}

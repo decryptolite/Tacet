@@ -7,7 +7,7 @@ const steps = [
   {
     number: "02",
     title: "Seal and deploy",
-    body: "Each allocation is encrypted client-side using Zama's FHEVM. The chain receives ciphertext handles, never amounts. One wallet signature deploys the campaign.",
+    body: "Each allocation is encrypted client-side using Zama's FHEVM. The chain receives ciphertext handles, never amounts. A short signing sequence authorizes, funds, and seals the campaign.",
   },
   {
     number: "03",
@@ -38,7 +38,15 @@ export default function HowItWorks() {
 
         {/* Trust line */}
         <p className="font-mono text-code text-ink-400 text-center">
-          Audited by OpenZeppelin · Deployed on Sepolia · Source on GitHub
+          Audited by OpenZeppelin · Deployed on Sepolia ·{" "}
+          <a
+            href="https://github.com/decryptolite/Tacet"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline-offset-4 hover:text-ink-1000 hover:underline"
+          >
+            Source on GitHub
+          </a>
         </p>
       </div>
     </section>

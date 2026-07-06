@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Button from "@/components/design/Button";
 import FaucetPanel from "@/components/operator/FaucetPanel";
 import { computeAllocations, type Contributor, type Formula } from "@/lib/github";
+import { TOKEN_SYMBOL } from "@/lib/tokenops";
 
 interface AllocationsStepProps {
   contributors: Contributor[];
@@ -50,7 +51,7 @@ export default function AllocationsStep({ contributors, selected, onBack, onNext
       {/* Budget */}
       <div>
         <label htmlFor="budget" className="block text-label text-ink-600 mb-2 uppercase tracking-wider">
-          Total budget (cUSDT)
+          Total budget ({TOKEN_SYMBOL})
         </label>
         <div className="flex items-center gap-4">
           <input
@@ -96,7 +97,7 @@ export default function AllocationsStep({ contributors, selected, onBack, onNext
         <div className="grid grid-cols-[1fr_auto_auto] gap-4 py-2 border-b border-ink-200 mb-1">
           <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px]">Contributor</span>
           <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px] text-right">Commits</span>
-          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px] text-right">Allocation (cUSDT)</span>
+          <span className="font-mono text-[10px] text-ink-250 uppercase tracking-[1px] text-right">Allocation ({TOKEN_SYMBOL})</span>
         </div>
 
         <div className="divide-y divide-ink-100">
@@ -127,7 +128,7 @@ export default function AllocationsStep({ contributors, selected, onBack, onNext
         <div className="mt-4 pt-4 border-t border-ink-200 grid grid-cols-[1fr_auto] gap-4">
           <span className="text-small text-ink-600">Total allocated</span>
           <span className="font-mono text-code text-ink-1000 tabular-nums text-right">
-            {totalAllocated.toLocaleString()} cUSDT
+            {totalAllocated.toLocaleString()} {TOKEN_SYMBOL}
           </span>
           {formula === "manual" && remainder !== 0 && (
             <>
@@ -135,7 +136,7 @@ export default function AllocationsStep({ contributors, selected, onBack, onNext
                 {remainder > 0 ? "Unallocated" : "Over budget"}
               </span>
               <span className={["font-mono text-code tabular-nums text-right", remainder < 0 ? "text-state-error" : "text-ink-400"].join(" ")}>
-                {Math.abs(remainder).toLocaleString()} cUSDT
+                {Math.abs(remainder).toLocaleString()} {TOKEN_SYMBOL}
               </span>
             </>
           )}

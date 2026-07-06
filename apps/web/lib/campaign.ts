@@ -1,7 +1,7 @@
 import { createPublicClient, http, isAddress, zeroAddress, type Address } from "viem";
 import { sepolia } from "viem/chains";
 import { createConfidentialAirdropClient } from "@tokenops/sdk/fhe-airdrop";
-import { decodeClaimLinkId, type EncryptedClaimPayload } from "@/lib/tokenops";
+import { decodeClaimLinkId, TOKEN_SYMBOL, type EncryptedClaimPayload } from "@/lib/tokenops";
 import { fetchCampaignMeta } from "@/lib/registry";
 
 /** Recipient record — decoded from the per-recipient claim link, mirrored against the registry. */
@@ -92,7 +92,7 @@ export async function getClaimData(id: string): Promise<ClaimData> {
       maintainerAddress: meta.maintainer,
       title: meta.title,
       repoUrl: meta.repoUrl,
-      token: "cUSDT",
+      token: TOKEN_SYMBOL,
       deadline: meta.deadline,
       createdAt: meta.createdAt,
     },

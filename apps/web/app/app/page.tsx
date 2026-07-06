@@ -6,7 +6,6 @@ import ZamaGate from "@/components/shared/ZamaGate";
 import RecipientsStep from "@/components/operator/RecipientsStep";
 import AllocationsStep from "@/components/operator/AllocationsStep";
 import ReviewStep from "@/components/operator/ReviewStep";
-import { truncate } from "@/lib/design-tokens";
 import type { Contributor, Formula } from "@/lib/github";
 
 type Step = 1 | 2 | 3;
@@ -25,8 +24,6 @@ interface ComposerState {
   formula: Formula;
   amounts: Record<string, number>;
 }
-
-const CAMPAIGN_REF = "0x7c2e91b5d6f8a0c5d4e3b29f44a2c1";
 
 export default function ComposerPage() {
   const [step, setStep] = useState<Step>(1);
@@ -55,7 +52,7 @@ export default function ComposerPage() {
       <main id="main" className="max-w-[48rem] mx-auto px-8 md:px-16 py-12">
         {/* Document header — signature move #5 */}
         <div className="flex items-center justify-between doc-header mb-8">
-          <span>Campaign · {truncate(CAMPAIGN_REF)}</span>
+          <span>New campaign · draft</span>
           <span>{new Date().toISOString().slice(0, 10).replace(/-/g, ".")}</span>
         </div>
 

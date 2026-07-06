@@ -19,7 +19,7 @@ import { useZamaSDK } from "@zama-fhe/react-sdk";
 import { sepolia } from "viem/chains";
 import type { Hex } from "viem";
 import { TestnetFaucetClient, FaucetSupplyExhaustedError } from "@tokenops/sdk/testnet-faucet";
-import { CTTT_SEPOLIA, TOKEN_DECIMALS } from "@/lib/tokenops";
+import { CTTT_SEPOLIA, TOKEN_DECIMALS, TOKEN_SYMBOL } from "@/lib/tokenops";
 
 const MINT_AMOUNT = BigInt(500) * BigInt(10) ** BigInt(TOKEN_DECIMALS);
 
@@ -125,7 +125,7 @@ export default function FaucetPanel({ requiredAmount = 0 }: FaucetPanelProps) {
   return (
     <div className="border-0.5 border-ink-200 rounded-input bg-card" style={{ padding: "20px 24px" }}>
       <div className={["flex items-center justify-between", mode === "sealed" ? "mb-16" : "mb-8"].join(" ")}>
-        <span className="font-mono text-[10px] uppercase tracking-[1px] text-ink-400">CTTT balance</span>
+        <span className="font-mono text-[10px] uppercase tracking-[1px] text-ink-400">{TOKEN_SYMBOL} balance</span>
         <span
           className={[
             "font-mono text-[20px] tabular-nums",
@@ -139,7 +139,7 @@ export default function FaucetPanel({ requiredAmount = 0 }: FaucetPanelProps) {
       {mode !== "sealed" && (
         <p className="mb-16 font-sans text-[14px] text-ink-600">
           {mode === "zero"
-            ? "You need CTTT test tokens to run a campaign."
+            ? `You need ${TOKEN_SYMBOL} test tokens to run a campaign.`
             : "Insufficient balance for this campaign."}
         </p>
       )}
@@ -160,7 +160,7 @@ export default function FaucetPanel({ requiredAmount = 0 }: FaucetPanelProps) {
           className="rounded-pill bg-accent font-sans text-[14px] font-medium text-ink-1000 transition-opacity hover:opacity-90 disabled:pointer-events-none"
           style={{ padding: "10px 24px", opacity: minting ? 0.7 : 1 }}
         >
-          {minting ? "Minting…" : "Mint 500 CTTT →"}
+          {minting ? "Minting…" : `Mint 500 ${TOKEN_SYMBOL} →`}
         </button>
       )}
       {error && <p className="mt-12 font-mono text-[12px] text-ink-400">{error}</p>}

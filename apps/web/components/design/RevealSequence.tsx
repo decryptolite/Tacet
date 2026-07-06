@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ease, duration, truncate } from "@/lib/design-tokens";
+import { TOKEN_SYMBOL } from "@/lib/tokenops";
 
 interface RevealSequenceProps {
   handle: string;
@@ -80,11 +81,11 @@ export default function RevealSequence({ handle, decryptedValue }: RevealSequenc
           >
             <div
               className="font-serif text-display text-ink-1000 leading-none tracking-tight"
-              aria-label={`${decryptedValue} cUSDT`}
+              aria-label={`${decryptedValue} ${TOKEN_SYMBOL}`}
             >
               {decryptedValue}
             </div>
-            <div className="font-mono text-code text-ink-600">cUSDT</div>
+            <div className="font-mono text-code text-ink-600">{TOKEN_SYMBOL}</div>
             <div className="font-mono text-code text-ink-400 mt-1">
               {truncate(handle)}
             </div>
