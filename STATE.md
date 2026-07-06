@@ -2,8 +2,8 @@
 
 > Read this file FIRST, before CLAUDE.md, before PRD.md, before tacet-build-brief.md. This file states what is ACTUALLY true about the codebase right now. Other docs may contain stale assumptions, aspirational file trees, or day-numbered plans that no longer match reality. Where any other doc conflicts with this file, this file wins. Update this file's "Last verified" line whenever you change it.
 
-**Last verified:** 2026-06-30 by Claude Code — post-commit, post-CSS-audit, post-SDK-script-pass
-**Deadline:** July 7, 2026, 23:59 AOE — 7 days remaining
+**Last verified:** 2026-07-06 by Claude Code — post-72bd6a3, after a live end-to-end browser test on Sepolia confirmed the full operator→claim loop
+**Deadline:** July 7, 2026, 23:59 AOE — ~1 day remaining
 
 ---
 
@@ -28,18 +28,31 @@ When given an instruction to fix, build, or test something: **attempt the fix in
 - **`signClaimAuthorization` API surface confirmed**: Returns valid 65-byte EIP-712 sig with correct test wallet
 - **Live Sepolia factory confirmed reachable**: `defaultGasFee: 3500000000000 wei`, implementation at `0x6FAb610C7218f208c68Cb106CD75e978FD42c86B`
 - **Git repo initialized and committed**: Standalone git repo at `C:/Users/HP/Documents/Tacet`, 64 source files, commit `0ea325a`. `.env.local` confirmed absent from all commits.
+- **GitHub remote pushed**: `origin/main` exists and is up to date. The "push pending" note in older revisions of this file is obsolete.
+- **Fund-on-create works** (`81cb4ca`): the factory is authorized as an ERC-7984 operator before the fund-on-create call, clearing the `0x79f2cb38` revert. Executed successfully against live Sepolia.
+- **THE FULL OPERATOR→CLAIM LOOP IS VERIFIED END-TO-END** (post-`72bd6a3`, live browser test on Sepolia by the user):
+  - Claim page renders the sealed allocation correctly (`fetchCampaignMeta` OK; real maintainer / title / deadline decoded)
+  - Reveal runs the client-side FHE decrypt successfully — redaction bar resolved to a real number (40 cUSDT)
+  - Claim transaction lands on-chain (tx `0x888f4…70500`), status "Claimed"
+  - Receipt PNG saves and renders correctly
+  - Confirmed with a second independent wallet, full end-to-end
+  - **Do NOT touch or re-verify** the claim rendering, the decode, the reveal, or the FHE path — they work.
 
 ## What is BUILT BUT UNVERIFIED (highest risk, fix order priority)
 
-1. **`toEncryptor` adapter with real Zama relayer**: Confirmed correct for `RelayerCleartext` (hex → Uint8Array). The ACTUAL `useZamaSDK().relayer` (`RelayerDispatcher`) also returns `EncryptResult = { encryptedValues: EncryptedValue[], inputProof: Hex }` per type declarations — same format, adapter applies. Runtime test still needs a real browser session with Zama WASM WebWorker.
-2. **Fund-on-create path** (`useCreateAndFundConfidentialAirdropAndGetAddress`) — never executed. Possible undocumented approval step requirement. Test requires real CTTT_SEPOLIA tokens.
-3. **The full end-to-end claim loop** — has never been run once, by anyone, against real chain state. This is the single most important unresolved question in the entire project: does the product actually work?
+**All three prior risks are BURNED DOWN as of the 2026-07-06 live browser test. Nothing remains in this section.**
+
+1. ~~`toEncryptor` adapter with real Zama relayer~~ ✓ Exercised in the live reveal (FHE decrypt succeeded, real cleartext returned).
+2. ~~Fund-on-create path~~ ✓ Works via `81cb4ca` (factory authorized as ERC-7984 operator). Executed on live Sepolia.
+3. ~~The full end-to-end claim loop~~ ✓ VERIFIED end-to-end on live Sepolia with two independent wallets. See the verified-working section above for details.
 
 ## What does NOT exist yet
 
-- **GitHub remote**: needs `git remote add origin <url> && git push -u origin main` — user must create the GitHub repo and run these commands
-- **Vercel deployment**: needs GitHub remote first, then `vercel --prod` from `apps/web/`
-- **Real end-to-end UI test**: requires wallet with ETH (~0.05 ETH for gas) + CTTT_SEPOLIA tokens
+- **Vercel deployment**: `vercel --prod` from `apps/web/` (GitHub remote is now in place)
+- **Error-state guard rails**: additive UI for strangers hitting wrong-wallet, already-claimed, expired, and no-gas states — does not exist yet, additive only, must not alter the working claim path
+- **Two UX improvements**: recipient soft-cap warning, upfront signature-count notice, silent copy-link confirmation
+- **Diagnostics cleanup**: strip `[tacet]` debug logging + the unused import
+- **README + 3-min video + submission**
 
 ## What is OUT OF SCOPE — do not build, do not suggest, do not drift toward
 
@@ -49,9 +62,12 @@ When given an instruction to fix, build, or test something: **attempt the fix in
 
 ## Fix order — do not reorder, do not skip ahead
 
-1. ~~Commit + push to GitHub~~ ✓ Committed. **Pending: push** (user needs to create GitHub repo and run `git remote add origin` + `git push`)
+1. ~~Commit + push to GitHub~~ ✓ Committed and pushed. `origin/main` is up to date.
 2. ~~Fix the rendering bug definitively~~ ✓ Resolved: dev-mode timing only; production CSS is correct
 3. ~~Script test of riskiest code paths~~ ✓ `apps/web/scripts/test-sdk.cjs` passes: adapter, encryptUint64, signClaimAuthorization, factory live read
-4. **Now: walk the real UI end-to-end** — user physically present with two wallets, CTTT_SEPOLIA tokens obtained
-5. Deploy to Vercel (needs GitHub remote first)
-6. Polish, video, submission
+4. ~~Walk the real UI end-to-end~~ ✓ VERIFIED on live Sepolia, two wallets, full operator→claim loop (2026-07-06). Core functionality is DONE.
+5. **Now: error-state guard rails** — additive UI for wrong-wallet / already-claimed / expired / no-gas. Must not alter the working claim path.
+6. Two UX improvements — recipient soft-cap warning, upfront signature-count notice, silent copy-link confirmation
+7. Strip `[tacet]` diagnostics + unused import
+8. Deploy to Vercel
+9. README + 3-min video + submission
